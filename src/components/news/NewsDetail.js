@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNewsDetail, getNewsTerms, getTermDetail } from '../../api/News';
 import TermPopup from './TermPopup';
+import NewsQuiz from './NewsQuiz';
+import { generateQuiz } from '../../api/Quiz';
 
 const CATEGORIES = [
   { key: '경제', label: 'MAIN' },
@@ -24,6 +26,25 @@ const NewsDetail = () => {
   const contentRef = useRef(null); // 본문 영역을 참조하기 위한 변수
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 }); // 팝업 위치 상태
+  const [quizzes, setQuizzes] = useState([]);
+  const [quizLoading, setQuizLoading] = useState(false);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const newsData = await getNewsDetail(newsId);
+      const termsData = await getNewsTerms(newsId);
+      setNews(newsData);
+      setTerms(termsData);
+      
+      // 퀴즈 생성 시작
+      setQuizLoading(true);
+      const quizData = await generateQuiz(newsId);
+      setQuizzes(quizData);
+      setQuizLoading(false);
+    };
+    fetchData();
+  }, [newsId]);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -121,6 +142,16 @@ const NewsDetail = () => {
           className="text-gray-800 leading-relaxed text-xl whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: highlightContent(news.fullContent, terms) }}
         />
+        
+        {/* 최하단 퀴즈 영역 */}
+        {quizLoading ? (
+          <div className="mt-20 text-center py-10 bg-gray-50 rounded-3xl border-2 border-dashed">
+            <div className="animate-spin inline-block w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mb-4"></div>
+            <p className="text-gray-500 font-medium">AI가 뉴스를 분석하여 퀴즈를 만들고 있어요...</p>
+          </div>
+        ) : (
+          <NewsQuiz quizList={quizzes} />
+        )}
       </article>
 
       {/* 팝업 컴포넌트 연결 */}
