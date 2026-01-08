@@ -9,3 +9,16 @@ export const generateQuiz = async (newsId) => {
     return [];
   }
 };
+
+export const submitQuizAnswer = async (quizId, memberAnswer) => {
+  try {
+    // DTO 구조에 맞춰 { memberAnswer: "선택한답" } 전달
+    const response = await api.post(`/api/quiz/${quizId}/submit`, {
+      memberAnswer: memberAnswer
+    });
+    return response.data.result; // SubmitResultDTO 반환
+  } catch (error) {
+    console.error("퀴즈 제출 실패:", error);
+    return null;
+  }
+};

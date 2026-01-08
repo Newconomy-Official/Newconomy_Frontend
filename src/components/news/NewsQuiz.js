@@ -1,77 +1,119 @@
 import React, { useState } from 'react';
+import { submitQuizAnswer } from '../../api/Quiz';
 
 const NewsQuiz = ({ quizList }) => {
-  const [userAnswers, setUserAnswers] = useState({}); // { quizId: selectedOption }
-  const [showExplanations, setShowExplanations] = useState({}); // { quizId: boolean }
+  const [results, setResults] = useState({}); // { quizId: SubmitResultDTO }
+  const [submitting, setSubmitting] = useState({}); // 로딩 상태 관리
 
-  const handleOptionClick = (quizId, optionText, isCorrect) => {
-    if (showExplanations[quizId]) return; // 이미 정답 확인했으면 클릭 불가
+  const handleOptionClick = async (quizId, optionText) => {
+    // 이미 풀었거나 제출 중이면 중복 호출 방지
+    if (results[quizId] || submitting[quizId]) return;
 
-    setUserAnswers(prev => ({ ...prev, [quizId]: optionText }));
-    setShowExplanations(prev => ({ ...prev, [quizId]: true }));
+    setSubmitting(prev => ({ ...prev, [quizId]: true }));
+    
+    // 서버에 정답 제출 API 호출
+    const resultData = await submitQuizAnswer(quizId, optionText);
+    
+    if (resultData) {
+      // 서버 응답 결과 저장 (정답 여부, 실제 정답, 해설 등 포함)
+      setResults(prev => ({ ...prev, [quizId]: resultData }));
+    }
+    
+    setSubmitting(prev => ({ ...prev, [quizId]: false }));
   };
 
   if (!quizList || quizList.length === 0) return null;
 
-  return (
+return (
     <div className="mt-20 border-t pt-12 pb-20">
-      <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-        <span className="text-3xl">📝</span> AI가 생성한 핵심 체크 퀴즈
-      </h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-8">📝 AI 핵심 체크 퀴즈</h3>
 
       <div className="space-y-10">
-        {quizList.map((quiz, index) => (
-          <div key={quiz.id} className="bg-gray-50 rounded-3xl p-8 border border-gray-100">
-            <div className="flex items-start gap-4 mb-6">
-              <span className="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
-                {index + 1}
-              </span>
-              <p className="text-lg font-semibold text-gray-800 pt-1">{quiz.question}</p>
-            </div>
+        {quizList.map((quiz, index) => {
+          const result = results[quiz.id]; // 해당 퀴즈의 제출 결과
+          const isSolved = !!result;       // 풀었는지 여부
 
-            {/* 선택지 영역 */}
-            <div className="grid grid-cols-1 gap-3 ml-12">
-              {quiz.quizOptionList.map((option) => {
-                const isSelected = userAnswers[quiz.id] === option.optionText;
-                const isCorrect = option.isCorrect;
-                const revealed = showExplanations[quiz.id];
+          let options = quiz.quizOptionList || [];
+          if (options.length === 0 && quiz.quizType === 'OX') {
+            options = [
+              { optionText: 'O', optionOrder: 1 },
+              { optionText: 'X', optionOrder: 2 }
+            ];
+          }
 
-                let btnClass = "p-4 rounded-xl border-2 transition-all text-left font-medium ";
-                if (!revealed) {
-                  btnClass += "bg-white border-gray-200 hover:border-indigo-300 hover:bg-indigo-50";
-                } else {
-                  if (isCorrect) btnClass += "bg-green-50 border-green-500 text-green-700";
-                  else if (isSelected) btnClass += "bg-red-50 border-red-500 text-red-700";
-                  else btnClass += "bg-white border-gray-100 text-gray-400";
-                }
-
-                return (
-                  <button
-                    key={option.optionOrder}
-                    onClick={() => handleOptionClick(quiz.id, option.optionText, isCorrect)}
-                    className={btnClass}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span>{option.optionText}</span>
-                      {revealed && isCorrect && <span className="text-xl">✅</span>}
-                      {revealed && isSelected && !isCorrect && <span className="text-xl">❌</span>}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* 해설 영역 */}
-            {showExplanations[quiz.id] && (
-              <div className="mt-6 ml-12 p-5 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
-                <p className="text-indigo-900 leading-relaxed">
-                  <span className="font-bold mr-2">💡 해설:</span>
-                  {quiz.explanation}
+          return (
+            <div key={quiz.id} className="bg-gray-50 rounded-3xl p-8 border border-gray-100">
+              <div className="flex items-start gap-4 mb-6">
+                <span className="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
+                  {index + 1}
+                </span>
+                <p className="text-lg font-semibold text-gray-800 pt-1">
+                  [{quiz.quizType}] {quiz.question}
                 </p>
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* O/X 퀴즈일 경우 가로 배열, 다지선다일 경우 세로 배열 */}
+              <div className={`grid gap-3 ml-12 ${quiz.quizType === 'OX' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {options.map((option) => {
+                  const isUserSelection = result?.memberAnswer === option.optionText;
+                  const isCorrectAnswer = result?.correctAnswer === option.optionText;
+
+                  let btnClass = "p-4 rounded-xl border-2 transition-all text-center font-bold ";
+
+                  if (!isSolved) {
+                    btnClass += "bg-white border-gray-200 hover:border-indigo-300 hover:bg-indigo-50";
+                  } else {
+                    // 정답인 경우 (초록색)
+                    if (isCorrectAnswer) btnClass += "bg-green-100 border-green-500 text-green-700";
+                    // 틀린 답을 선택한 경우 (빨간색)
+                    else if (isUserSelection && !result.isCorrect) btnClass += "bg-red-100 border-red-500 text-red-700";
+                    // 나머지
+                    else btnClass += "bg-white border-gray-100 text-gray-300";
+                  }
+
+                  return (
+                    <button
+                      key={option.optionOrder}
+                      onClick={() => handleOptionClick(quiz.id, option.optionText)}
+                      disabled={isSolved}
+                      className={btnClass}
+                    >
+                      <span className="text-xl">{option.optionText}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 결과 및 해설 영역 (서버에서 받은 데이터 기반) */}
+              {isSolved && (
+                <div className="mt-6 ml-12 p-5 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    {/* 📍 result.isCorrect가 확실히 true일 때만 '정답' 문구를 띄움 */}
+                    {result.correct === true ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">🎉</span>
+                        <span className="text-green-600 font-bold text-lg">
+                          정답입니다!
+                          </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">🧐</span>
+                        <span className="text-red-600 font-bold text-lg">
+                          아쉬워요! (정답: {result.correctAnswer})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-indigo-900 leading-relaxed text-sm">
+                    <span className="font-bold mr-2">💡 해설:</span>
+                    {result.explanation}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
