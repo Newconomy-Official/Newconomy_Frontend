@@ -22,3 +22,13 @@ export const submitQuizAnswer = async (quizId, memberAnswer) => {
     return null;
   }
 };
+
+export const generateTermQuiz = async () => {
+  try {
+    const response = await api.post('/api/quiz/generateByTerm');
+    return response.data.result;
+  } catch (error) {
+    console.error("경제 용어 퀴즈 생성 실패:", error);
+    return [];
+  }
+};
