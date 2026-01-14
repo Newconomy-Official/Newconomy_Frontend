@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { generateTermQuiz, submitQuizAnswer } from '../../api/Quiz';
 
-const QuizTab = () => {
+const QuizTab = ({ setActiveTab }) => {
   const [quizList, setQuizList] = useState([]); 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -78,7 +78,10 @@ const QuizTab = () => {
           <p className="text-5xl font-black text-indigo-700">{score} / {quizList.length}</p>
         </div>
         <button 
-          onClick={() => setQuizList([])} 
+          onClick={() => {
+            setQuizList([]);
+            setActiveTab('news');
+          }} 
           className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
         >
           메인으로 돌아가기
