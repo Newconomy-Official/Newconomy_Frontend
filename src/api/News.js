@@ -8,7 +8,7 @@ export const getNewsList = async (category, page = 0) => {
   try {
     const params = {
       page: page,
-      size: 10
+      size: 12
     };
 
     if (category && category !== 'MAIN') {

@@ -122,7 +122,7 @@ const NewsTab = () => {
 
         <button 
           onClick={() => setCurrentPage(prev => prev + 1)}
-          disabled={newsList.length < 10} // 가져온 데이터가 10개 미만이면 다음 페이지 없음으로 간주
+          disabled={newsList.length < 12} // 가져온 데이터가 10개 미만이면 다음 페이지 없음으로 간주
           className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-30"
         >
           &gt;
