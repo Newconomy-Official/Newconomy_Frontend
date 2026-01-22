@@ -18,7 +18,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     const url = isLoginView ? '/api/auth/login' : '/api/auth/signup';
     
     try {
-      const response = await fetch(`http://localhost:8080${url}`, {
+      const response = await fetch(`http://43.200.52.142:8080${url}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -45,7 +45,7 @@ const AuthModal = ({ isOpen, onClose }) => {
   const handleSocialLogin = (provider) => {
     // 백엔드의 OAuth2 엔드포인트로 브라우저 이동
     // 예: http://localhost:8080/oauth2/authorization/kakao
-    window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+    window.location.href = `http://43.200.52.142:8080/oauth2/authorization/${provider}`;
   };
 
   return (
