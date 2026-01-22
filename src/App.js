@@ -73,7 +73,7 @@ const NewconomyContent = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 pt-20">
         {activeTab === 'news' && <NewsTab onTermClick={handleTermClick} />}
         {activeTab === 'dictionary' && <DictionaryTab />}
         {activeTab === 'quiz' && <QuizTab setActiveTab={setActiveTab} />}

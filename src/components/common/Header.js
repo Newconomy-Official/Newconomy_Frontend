@@ -12,7 +12,7 @@ const Header = ({ activeTab, setActiveTab }) => {
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-indigo-600">💰 경제 학습 플랫폼</h1>
+          <h1 className="text-2xl font-bold text-indigo-600 mr-10">💰 경제 학습 플랫폼</h1>
           <div className="flex gap-2">
             {tabs.map((tab) => (
               <button
