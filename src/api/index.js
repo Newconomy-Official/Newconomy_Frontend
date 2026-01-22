@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080', // 백엔드 서버 주소
+  baseURL: 'http://43.200.52.142:8080', // 백엔드 서버 주소
 });
 
 // [Interceptor] 요청을 보내기 직전에 가로채서 헤더에 토큰을 넣음
