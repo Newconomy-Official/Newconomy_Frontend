@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNewsDetail, getNewsTerms, getTermDetail, generateTermByLlm } from '../../api/News';
 import TermPopup from './TermPopup';
@@ -55,10 +55,10 @@ const NewsDetail = () => {
 
     // 언마운트 시 폴링 종료
     return () => stopPolling();
-  }, [newsId]);
+  }, [newsId, startPolling, stopPolling]);
 
   // --- 폴링 로직 시작 ---
-  const startPolling = () => {
+  const startPolling = useCallback(() => {
     // 혹시 이미 돌아가고 있다면 중지
     stopPolling();
     let count = 0;
@@ -78,14 +78,14 @@ const NewsDetail = () => {
         stopPolling();
       }
     }, 2000); // 2초 간격
-  };
+  }, [newsId, stopPolling]);
 
-  const stopPolling = () => {
+  const stopPolling = useCallback(() => {
     if (pollingInterval.current) {
       clearInterval(pollingInterval.current);
       pollingInterval.current = null;
     }
-  };
+  }, []);
   // --- 폴링 로직 끝 ---
   
   useEffect(() => {
