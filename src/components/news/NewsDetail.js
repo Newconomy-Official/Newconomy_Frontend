@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNewsDetail, getNewsTerms, getTermDetail } from '../../api/News';
+import { getNewsDetail, getNewsTerms, getTermDetail, generateTermByLlm } from '../../api/News';
 import TermPopup from './TermPopup';
 import NewsQuiz from './NewsQuiz';
 import { generateQuiz } from '../../api/Quiz';
@@ -28,33 +28,63 @@ const NewsDetail = () => {
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 }); // 팝업 위치 상태
   const [quizzes, setQuizzes] = useState([]);
   const [quizLoading, setQuizLoading] = useState(false);
+  const pollingInterval = useRef(null); // 폴링을 위한 Interval ID 저장용 Ref
 
 
   useEffect(() => {
     const fetchData = async () => {
+      // 1. 뉴스 상세 정보부터 우선적으로 가져오기
       const newsData = await getNewsDetail(newsId);
-      const termsData = await getNewsTerms(newsId);
       setNews(newsData);
-      setTerms(termsData);
+
+      // 2. 뉴스 데이터 로딩 후, 용어 생성 요청 (POST)
+      // 백그라운드에서 실행되도록 비동기로 호출만 함
+      generateTermByLlm(newsId).catch(err => console.error("용어 생성 실패:", err));
+
+      // 3. 폴링 시작 (용어 조회)
+      startPolling();
       
-      // 퀴즈 생성 시작
+      // 4. 퀴즈 생성은 별도로 진행
       setQuizLoading(true);
       const quizData = await generateQuiz(newsId);
       setQuizzes(quizData);
       setQuizLoading(false);
     };
+
     fetchData();
+
+    // 언마운트 시 폴링 종료
+    return () => stopPolling();
   }, [newsId]);
 
-  useEffect(() => {
-    const fetchDetail = async () => {
-      const newsData = await getNewsDetail(newsId);
-      const termData = await getNewsTerms(newsId);
-      setNews(newsData);
-      setTerms(termData);
-    };
-    fetchDetail();
-  }, [newsId]);
+  // --- 폴링 로직 시작 ---
+  const startPolling = () => {
+    // 혹시 이미 돌아가고 있다면 중지
+    stopPolling();
+
+    pollingInterval.current = setInterval(async () => {
+      try {
+        const termsData = await getNewsTerms(newsId);
+        
+        // 용어가 한 개라도 들어오면 폴링 종료 (또는 특정 조건 설정)
+        // 팀원분의 테스트 코드처럼 hasSize(2) 같은 명확한 조건이 있다면 추가 가능
+        if (termsData && termsData.length > 0) {
+          setTerms(termsData);
+          stopPolling(); 
+        }
+      } catch (error) {
+        console.error("폴링 중 에러:", error);
+      }
+    }, 2000); // 2초 간격
+  };
+
+  const stopPolling = () => {
+    if (pollingInterval.current) {
+      clearInterval(pollingInterval.current);
+      pollingInterval.current = null;
+    }
+  };
+  // --- 폴링 로직 끝 ---
   
   useEffect(() => {
     const handleContentClick = async (e) => {
@@ -96,7 +126,7 @@ const NewsDetail = () => {
         currentRef.removeEventListener('click', handleContentClick);
       }
     };
-  }, [news]); // news가 로드되어 본문이 그려진 후에 실행
+  }, [news, terms]); // news가 로드되어 본문이 그려진 후에 실행
 
   const highlightContent = (content, termList) => {
     if (!content || termList.length === 0) return content;
