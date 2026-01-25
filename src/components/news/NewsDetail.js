@@ -31,6 +31,13 @@ const NewsDetail = () => {
   const pollingInterval = useRef(null); // 폴링을 위한 Interval ID 저장용 Ref
 
   // --- 폴링 로직 시작 ---
+  const stopPolling = useCallback(() => {
+    if (pollingInterval.current) {
+      clearInterval(pollingInterval.current);
+      pollingInterval.current = null;
+    }
+  }, []);
+
   const startPolling = useCallback(() => {
     // 혹시 이미 돌아가고 있다면 중지
     stopPolling();
@@ -52,13 +59,6 @@ const NewsDetail = () => {
       }
     }, 2000); // 2초 간격
   }, [newsId, stopPolling]);
-
-  const stopPolling = useCallback(() => {
-    if (pollingInterval.current) {
-      clearInterval(pollingInterval.current);
-      pollingInterval.current = null;
-    }
-  }, []);
   // --- 폴링 로직 끝 ---
   
   useEffect(() => {
