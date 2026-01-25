@@ -1,8 +1,4 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://43.200.52.142:8080', // 백엔드 주소
-});
+import api from './index';
 
 export const getNewsList = async (category, page = 0) => {
   try {
@@ -68,7 +64,7 @@ export const getTermDetail = async (termId) => {
 export const generateTermByLlm = async (newsId) => {
   try {
     // 백그라운드에서 생성을 시작하라는 POST 요청
-    const response = await axios.post(`/api/news/${newsId}/generateTerm`);
+    const response = await api.post(`/api/news/${newsId}/generateTerm`);
     return response.data;
   } catch (error) {
     console.error("용어 생성 요청 중 오류 발생:", error);

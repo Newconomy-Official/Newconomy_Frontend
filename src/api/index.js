@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+console.log("환경변수 확인:", process.env.REACT_APP_API_URL);
+const BASE_URL = process.env.REACT_APP_API_URL;
+
 const api = axios.create({
-  baseURL: 'http://43.200.52.142:8080', // 백엔드 서버 주소
+  baseURL: BASE_URL,
 });
 
 // [Interceptor] 요청을 보내기 직전에 가로채서 헤더에 토큰을 넣음

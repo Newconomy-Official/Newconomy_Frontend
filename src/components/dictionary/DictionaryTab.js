@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from "../../api/index";
 import { ChevronRight, Loader2, ArrowLeft, BookOpen } from 'lucide-react';
 
 const DictionaryTab = () => {
@@ -18,7 +19,7 @@ const DictionaryTab = () => {
         setLoading(true);
         const user = JSON.parse(localStorage.getItem('user')); // 저장된 토큰 가져오기
 
-        const response = await fetch(`http://43.200.52.142:8080/api/term`, {
+        const response = await api.get(`/api/term`, {
           headers: {
             'Authorization': user ? `Bearer ${user.accessToken}` : '',
             'Content-Type': 'application/json'
@@ -46,7 +47,7 @@ const DictionaryTab = () => {
       setDetailLoading(true);
       const user = JSON.parse(localStorage.getItem('user')); // 저장된 토큰 가져오기
 
-      const response = await fetch(`http://43.200.52.142:8080/api/term/${termId}`, {
+      const response = await api.get(`api/term/${termId}`, {
         headers: {
           'Authorization': user ? `Bearer ${user.accessToken}` : '',
           'Content-Type': 'application/json'

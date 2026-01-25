@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import api from '../../api/index';
 import { X, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -18,7 +19,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     const url = isLoginView ? '/api/auth/login' : '/api/auth/signup';
     
     try {
-      const response = await fetch(`http://43.200.52.142:8080${url}`, {
+      const response = await api.get(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

@@ -50,8 +50,8 @@ const NewsDetail = () => {
       const termsData = await getNewsTerms(newsId);
       setTerms(termsData); // 일단 가져온 건 계속 화면에 업데이트
 
-      // 조건: 데이터가 충분히(예: 팀원 테스트처럼 2개 이상) 들어왔거나, 최대 횟수 도달 시
-      if (termsData.length >= 2 || count >= maxPolling) { 
+      // 조건: 최대 횟수 도달 시
+      if (count >= maxPolling) { 
         stopPolling();
       }
     } catch (error) {
