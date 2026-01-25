@@ -30,33 +30,6 @@ const NewsDetail = () => {
   const [quizLoading, setQuizLoading] = useState(false);
   const pollingInterval = useRef(null); // 폴링을 위한 Interval ID 저장용 Ref
 
-
-  useEffect(() => {
-    const fetchData = async () => {
-      // 1. 뉴스 상세 정보부터 우선적으로 가져오기
-      const newsData = await getNewsDetail(newsId);
-      setNews(newsData);
-
-      // 2. 뉴스 데이터 로딩 후, 용어 생성 요청 (POST)
-      // 백그라운드에서 실행되도록 비동기로 호출만 함
-      generateTermByLlm(newsId).catch(err => console.error("용어 생성 실패:", err));
-
-      // 3. 폴링 시작 (용어 조회)
-      startPolling();
-      
-      // 4. 퀴즈 생성은 별도로 진행
-      setQuizLoading(true);
-      const quizData = await generateQuiz(newsId);
-      setQuizzes(quizData);
-      setQuizLoading(false);
-    };
-
-    fetchData();
-
-    // 언마운트 시 폴링 종료
-    return () => stopPolling();
-  }, [newsId, startPolling, stopPolling]);
-
   // --- 폴링 로직 시작 ---
   const startPolling = useCallback(() => {
     // 혹시 이미 돌아가고 있다면 중지
@@ -88,6 +61,32 @@ const NewsDetail = () => {
   }, []);
   // --- 폴링 로직 끝 ---
   
+  useEffect(() => {
+    const fetchData = async () => {
+      // 1. 뉴스 상세 정보부터 우선적으로 가져오기
+      const newsData = await getNewsDetail(newsId);
+      setNews(newsData);
+
+      // 2. 뉴스 데이터 로딩 후, 용어 생성 요청 (POST)
+      // 백그라운드에서 실행되도록 비동기로 호출만 함
+      generateTermByLlm(newsId).catch(err => console.error("용어 생성 실패:", err));
+
+      // 3. 폴링 시작 (용어 조회)
+      startPolling();
+      
+      // 4. 퀴즈 생성은 별도로 진행
+      setQuizLoading(true);
+      const quizData = await generateQuiz(newsId);
+      setQuizzes(quizData);
+      setQuizLoading(false);
+    };
+
+    fetchData();
+
+    // 언마운트 시 폴링 종료
+    return () => stopPolling();
+  }, [newsId, startPolling, stopPolling]);
+
   useEffect(() => {
     const handleContentClick = async (e) => {
       const target = e.target.closest('[data-term-id]'); 
