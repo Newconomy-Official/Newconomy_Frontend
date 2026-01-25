@@ -61,19 +61,21 @@ const NewsDetail = () => {
   const startPolling = () => {
     // 혹시 이미 돌아가고 있다면 중지
     stopPolling();
+    let count = 0;
+    const maxPolling = 10; // 최대 10번(20초)만 시도
 
     pollingInterval.current = setInterval(async () => {
-      try {
-        const termsData = await getNewsTerms(newsId);
-        
-        // 용어가 한 개라도 들어오면 폴링 종료 (또는 특정 조건 설정)
-        // 팀원분의 테스트 코드처럼 hasSize(2) 같은 명확한 조건이 있다면 추가 가능
-        if (termsData && termsData.length > 0) {
-          setTerms(termsData);
-          stopPolling(); 
-        }
-      } catch (error) {
-        console.error("폴링 중 에러:", error);
+    count++;
+    try {
+      const termsData = await getNewsTerms(newsId);
+      setTerms(termsData); // 일단 가져온 건 계속 화면에 업데이트
+
+      // 조건: 데이터가 충분히(예: 팀원 테스트처럼 2개 이상) 들어왔거나, 최대 횟수 도달 시
+      if (termsData.length >= 2 || count >= maxPolling) { 
+        stopPolling();
+      }
+    } catch (error) {
+        stopPolling();
       }
     }, 2000); // 2초 간격
   };
