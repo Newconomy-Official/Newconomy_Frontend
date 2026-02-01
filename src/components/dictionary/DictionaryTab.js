@@ -22,10 +22,10 @@ const DictionaryTab = () => {
         const response = await api.get(`/api/term`, {
           headers: {
             'Authorization': user ? `Bearer ${user.accessToken}` : '',
-            'Content-Type': 'application/json'
           }
         });
-        const result = await response.json();
+
+        const result = response.data;
         
         if (result.isSuccess) {
           setTerms(result.result.terms); 
@@ -50,10 +50,10 @@ const DictionaryTab = () => {
       const response = await api.get(`api/term/${termId}`, {
         headers: {
           'Authorization': user ? `Bearer ${user.accessToken}` : '',
-          'Content-Type': 'application/json'
         }
       });
-      const result = await response.json();
+
+      const result = response.data;
       
       if (result.isSuccess) {
         // 백엔드 DTO: { termId, termName, detailedExplanation }
