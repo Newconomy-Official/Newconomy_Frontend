@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../../api/index';
+import api, {BASE_URL} from '../../api/index';
 import { X, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,12 +19,8 @@ const AuthModal = ({ isOpen, onClose }) => {
     const url = isLoginView ? '/api/auth/login' : '/api/auth/signup';
     
     try {
-      const response = await api.get(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const result = await response.json();
+      const response = await api.post(url, formData);
+      const result = response.data;
 
       if (result.isSuccess) {
         if (isLoginView) {
@@ -46,7 +42,7 @@ const AuthModal = ({ isOpen, onClose }) => {
   const handleSocialLogin = (provider) => {
     // 백엔드의 OAuth2 엔드포인트로 브라우저 이동
     // 예: http://localhost:8080/oauth2/authorization/kakao
-    window.location.href = `http://43.200.52.142:8080/oauth2/authorization/${provider}`;
+    window.location.href = `${BASE_URL}/oauth2/authorization/${provider}`;
   };
 
   return (

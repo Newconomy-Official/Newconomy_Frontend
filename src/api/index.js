@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 console.log("환경변수 확인:", process.env.REACT_APP_API_URL);
-const BASE_URL = process.env.REACT_APP_API_URL;
+export const BASE_URL = process.env.REACT_APP_API_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
